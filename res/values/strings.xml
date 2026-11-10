@@ -8,6 +8,8 @@
     <!-- Dolby Atmos -->
     <string name="dolby_title">Dolby Atmos</string>
     <string name="dolby_enable">Use Dolby Atmos</string>
+    <string name="dolby_atmos_on">Atmos is on</string>
+    <string name="dolby_atmos_off">Atmos is off</string>
     <string name="dolby_profile_title">Choose a profile</string>
     <string name="dolby_preset">Graphic equalizer</string>
     <string name="dolby_off">Off</string>
@@ -67,5 +69,14 @@
     <string name="dolby_balanced">Balanced</string>
     <string name="dolby_warm">Warm</string>
     <string name="dolby_detailed">Detailed</string>
+
+    <!-- Dolby Home UI additions -->
+    <string name="dolby_stereo_widening_requires_virtualizer">Requires headphone virtualization</string>
+    <string name="dolby_reset_profile_confirm_title">Reset profile settings?</string>
+    <string name="dolby_reset_profile_confirm_message">This will reset all audio enhancements for this profile to their default values.</string>
+    <string name="dolby_reset_profile_confirm_action">Reset</string>
+    <string name="dolby_cancel">Cancel</string>
+    <string name="dolby_back">Back</string>
+    <string name="dolby_enhancements_title">Audio enhancements</string>
 
 </resources>

@@ -30,43 +30,20 @@ fun PresetNameDialog(
     onPresetNameSet: (String) -> PresetNameValidationError?,
     onDismissDialog: () -> Unit,
 ) {
-    var showDialog by remember { mutableStateOf(true) }
-    if (!showDialog) {
-        onDismissDialog()
-        return
-    }
     var text by remember { mutableStateOf(presetName) }
     var error by remember { mutableStateOf<PresetNameValidationError?>(null) }
 
     AlertDialog(
-        onDismissRequest = { showDialog = false },
-        confirmButton = {
-            TextButton(
-                onClick = {
-                    onPresetNameSet(text)?.let {
-                        // validation failed
-                        error = it
-                        return@TextButton
-                    }
-                    // succeeded
-                    showDialog = false
-                    error = null
-                }
-            ) {
-                Text(stringResource(id = android.R.string.ok))
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = { showDialog = false }) {
-                Text(stringResource(id = android.R.string.cancel))
-            }
-        },
+        onDismissRequest = onDismissDialog,
         title = { Text(title) },
         text = {
             Column {
                 OutlinedTextField(
                     value = text,
-                    onValueChange = { text = it },
+                    onValueChange = {
+                        text = it
+                        error = null
+                    },
                     label = { Text(stringResource(id = R.string.dolby_geq_preset_name)) },
                     isError = error != null,
                     singleLine = true,
@@ -75,9 +52,29 @@ fun PresetNameDialog(
                     Text(
                         text = it.toErrorMessage(),
                         color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodySmall,
                         modifier = Modifier.padding(top = 8.dp),
                     )
                 }
+            }
+        },
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    val validationError = onPresetNameSet(text)
+                    if (validationError != null) {
+                        error = validationError
+                    } else {
+                        onDismissDialog()
+                    }
+                }
+            ) {
+                Text(stringResource(id = android.R.string.ok))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismissDialog) {
+                Text(stringResource(id = R.string.dolby_cancel))
             }
         },
     )

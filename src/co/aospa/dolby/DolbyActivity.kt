@@ -7,22 +7,28 @@
 package co.aospa.dolby
 
 import android.os.Bundle
-import co.aospa.dolby.preference.DolbySettingsFragment
-import com.android.settingslib.collapsingtoolbar.CollapsingToolbarBaseActivity
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
+import androidx.activity.viewModels
+import co.aospa.dolby.ui.DolbyViewModel
+import co.aospa.dolby.ui.DolbyViewModelFactory
+import co.aospa.dolby.ui.HomeScreen
+import co.aospa.dolby.ui.theme.DolbyTheme
 
-private const val TAG = "DolbyActivity"
+class DolbyActivity : ComponentActivity() {
 
-class DolbyActivity : CollapsingToolbarBaseActivity() {
+    private val viewModel: DolbyViewModel by viewModels {
+        DolbyViewModelFactory.getInstance(application)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        enableEdgeToEdge()
         super.onCreate(savedInstanceState)
-        supportFragmentManager
-            .beginTransaction()
-            .replace(
-                com.android.settingslib.collapsingtoolbar.R.id.content_frame,
-                DolbySettingsFragment(),
-                TAG,
-            )
-            .commit()
+        setContent {
+            DolbyTheme {
+                HomeScreen(viewModel = viewModel)
+            }
+        }
     }
 }

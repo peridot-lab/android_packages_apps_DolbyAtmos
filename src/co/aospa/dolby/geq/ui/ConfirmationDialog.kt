@@ -10,37 +10,29 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.res.stringResource
+import co.aospa.dolby.R
 
 @Composable
-fun ConfirmationDialog(text: String, onConfirm: () -> Unit, onDismiss: () -> Unit) {
-    var showDialog by remember { mutableStateOf(true) }
-    if (!showDialog) {
-        onDismiss()
-        return
-    }
-
+fun ConfirmationDialog(
+    text: String,
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit,
+    title: String? = null,
+) {
     AlertDialog(
-        onDismissRequest = { showDialog = false },
+        onDismissRequest = onDismiss,
+        title = title?.let { { Text(it) } },
+        text = { Text(text) },
         confirmButton = {
-            TextButton(
-                onClick = {
-                    showDialog = false
-                    onConfirm()
-                }
-            ) {
+            TextButton(onClick = onConfirm) {
                 Text(stringResource(id = android.R.string.ok))
             }
         },
         dismissButton = {
-            TextButton(onClick = { showDialog = false }) {
-                Text(stringResource(id = android.R.string.cancel))
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(id = R.string.dolby_cancel))
             }
         },
-        text = { Text(text) },
     )
 }

@@ -13,6 +13,7 @@ import co.aospa.dolby.DolbyConstants.Companion.PREF_PRESET
 import co.aospa.dolby.DolbyConstants.Companion.dlog
 import co.aospa.dolby.DolbyController
 import co.aospa.dolby.R
+import co.aospa.dolby.data.DolbyControllerGate
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
@@ -25,10 +26,11 @@ class EqualizerRepository(private val context: Context) {
 
     // Preset is saved as a string of comma separated gains in SharedPreferences
     // and is unique to each profile ID
-    private val profile = dolbyController.profile
-    private val profileSharedPrefs by lazy {
-        context.getSharedPreferences("profile_$profile", Context.MODE_PRIVATE)
-    }
+    private val profile: Int
+        get() = dolbyController.profile
+
+    private val profileSharedPrefs: SharedPreferences
+        get() = context.getSharedPreferences("profile_$profile", Context.MODE_PRIVATE)
 
     private val presetsSharedPrefs by lazy {
         context.getSharedPreferences("presets", Context.MODE_PRIVATE)
@@ -75,7 +77,8 @@ class EqualizerRepository(private val context: Context) {
 
     suspend fun getBandGains(): List<BandGain> =
         withContext(Dispatchers.IO) {
-            val gains = profileSharedPrefs.getString(PREF_PRESET, dolbyController.getPreset())
+            val rawPreset = DolbyControllerGate.execute { dolbyController.getPreset() }
+            val gains = profileSharedPrefs.getString(PREF_PRESET, rawPreset)
             return@withContext if (gains.isNullOrEmpty()) {
                     defaultPreset.bandGains
                 } else {
@@ -88,7 +91,7 @@ class EqualizerRepository(private val context: Context) {
         withContext(Dispatchers.IO) {
             dlog(TAG, "setBandGains($bandGains)")
             val gains = serializeGains(bandGains)
-            dolbyController.setPreset(gains)
+            DolbyControllerGate.execute { dolbyController.setPreset(gains) }
             profileSharedPrefs.edit().putString(PREF_PRESET, gains).apply()
         }
 
@@ -107,10 +110,18 @@ class EqualizerRepository(private val context: Context) {
             presetsSharedPrefs.edit().remove(preset.name).apply()
         }
 
-    private companion object {
-        const val TAG = "EqRepository"
+    companion object {
+        private const val TAG = "EqRepository"
 
         val tenBandFreqs = intArrayOf(32, 64, 125, 250, 500, 1000, 2000, 4000, 8000, 16000)
+
+        @Volatile
+        private var instance: EqualizerRepository? = null
+
+        fun getInstance(context: Context): EqualizerRepository =
+            instance ?: synchronized(this) {
+                instance ?: EqualizerRepository(context.applicationContext).also { instance = it }
+            }
 
         fun deserializeGains(bandGains: String): List<BandGain> {
             val gains: List<Int> =
